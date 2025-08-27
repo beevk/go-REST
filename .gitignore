@@ -1,0 +1,14 @@
+*.exe
+*.dll
+*.so
+*.dylib
+
+# Test binaries
+*_test
+
+# Logs and temporary files
+*.log
+*.tmp
+temp/
+
+gin-bin
