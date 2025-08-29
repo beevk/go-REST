@@ -48,7 +48,18 @@ func (v *Validator) MustBeLongerThan(field, value string, constraint int) bool {
 	return true
 }
 
+// Can also use custom struct instead of 4 parameters
+//
+//	type ElementMatcher struct {
+//		field string,
+//		val string
+//	}
+//
+// func (v *Validator) MustMatch(o, c ElementMatcher) bool {
 func (v *Validator) MustMatch(field1, val1, field2, val2 string) bool {
+	if _, ok := v.errors[field1]; ok {
+		return false
+	}
 	if val1 != val2 {
 		v.errors[field2] = ErrShouldMatch{field1: field1, field2: field2}.Error()
 		return false
@@ -57,7 +68,7 @@ func (v *Validator) MustMatch(field1, val1, field2, val2 string) bool {
 }
 
 func (v *Validator) MustBeValidEmail(field, email string) bool {
-	var emailRegexp = regexp.MustCompile("/^[a-z0-9][\\w\\.]{m,n}\\@\\w+?(\\.\\w+){1,}$/gi")
+	var emailRegexp = regexp.MustCompile("^[a-zA-Z0-9.!#$%&'*+/=?^_`{|}~-]+@[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*$")
 
 	if _, ok := v.errors[field]; ok {
 		return false

@@ -12,3 +12,6 @@
 temp/
 
 gin-bin
+
+.env
+.env.*

@@ -1,7 +1,5 @@
 package domain
 
-import "fmt"
-
 type RegisterPayload struct {
 	Email           string `json:"email"`
 	Password        string `json:"password"`
@@ -24,8 +22,6 @@ func (r *RegisterPayload) IsValid() (bool, map[string]string) {
 
 	v.MustNotBeEmpty("confirmPassword", r.ConfirmPassword)
 	v.MustMatch("password", r.Password, "confirmPassword", r.ConfirmPassword)
-
-	fmt.Println(":I am being called", v.errors)
 
 	return v.HasErrors(), v.errors
 }
