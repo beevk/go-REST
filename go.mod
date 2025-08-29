@@ -3,6 +3,7 @@ module github.com/beevk/go-todo
 go 1.24.2
 
 require (
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible // indirect
 	github.com/go-chi/chi/v5 v5.2.2 // indirect
 	github.com/go-pg/pg/v10 v10.15.0 // indirect
 	github.com/go-pg/zerochecker v0.2.0 // indirect
