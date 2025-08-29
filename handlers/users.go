@@ -1,7 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
 	"fmt"
 	"net/http"
 
@@ -9,18 +8,11 @@ import (
 )
 
 func (s *Server) registerUser() http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		payload := domain.RegisterPayload{}
+	var payload domain.RegisterPayload
 
-		err := json.NewDecoder(r.Body).Decode(&payload)
-		if err != nil {
-			badRequestResponse(w, err)
-			return
-		}
-
+	return validatePayload(func(w http.ResponseWriter, r *http.Request) {
 		fmt.Println("payload::", payload)
-
-		// Validate payload
+		fmt.Println("I AM HERE::")
 
 		// Store user in the database
 		//user, err := s.domain.Register(payload)
@@ -29,5 +21,5 @@ func (s *Server) registerUser() http.HandlerFunc {
 		//	return
 		//}
 		// Implementation will go here
-	}
+	}, &payload)
 }

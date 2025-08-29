@@ -1,8 +1,6 @@
 package handlers
 
 import (
-	"encoding/json"
-	"net/http"
 	"time"
 
 	"github.com/beevk/go-todo/domain"
@@ -12,6 +10,10 @@ import (
 
 type Server struct {
 	domain *domain.Domain
+}
+
+type PayloadValidation interface {
+	IsValid() (bool, map[string]string)
 }
 
 func NewServer(d *domain.Domain) *Server {
@@ -38,24 +40,4 @@ func SetupRouter(d *domain.Domain) *chi.Mux {
 	server.SetupRoutes(r)
 
 	return r
-}
-
-func jsonResponse(w http.ResponseWriter, data interface{}, statusCode int) {
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(statusCode)
-
-	if data == nil {
-		data = map[string]string{}
-	}
-
-	if err := json.NewEncoder(w).Encode(data); err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	return
-}
-
-func badRequestResponse(w http.ResponseWriter, err error) {
-	data := map[string]string{"error": err.Error()}
-	jsonResponse(w, data, http.StatusBadRequest)
 }
