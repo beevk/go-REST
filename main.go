@@ -12,11 +12,33 @@ import (
 )
 
 func main() {
+	dbHost := os.Getenv("DB_HOST")
+	if dbHost == "" {
+		dbHost = "localhost"
+	}
+
+	dbUser := os.Getenv("DB_USERNAME")
+	if dbUser == "" {
+		dbUser = "postgres"
+	}
+
+	dbPassword := os.Getenv("DB_PASSWORD")
+	if dbPassword == "" {
+		dbPassword = "mySecretPass"
+	}
+
+	dbName := os.Getenv("DB_NAME")
+	if dbName == "" {
+		dbName = "todo"
+	}
+
 	DB := postgres.New(&pg.Options{
-		User:     "postgres",
-		Password: "mySecretPass",
-		Database: "todo",
+		Addr:     dbHost + ":5432",
+		User:     dbUser,
+		Password: dbPassword,
+		Database: dbName,
 	})
+
 	defer func(DB *pg.DB) {
 		err := DB.Close()
 		if err != nil {
@@ -32,7 +54,7 @@ func main() {
 
 	port := os.Getenv("PORT")
 	if port == "" {
-		port = "8081"
+		port = "8080"
 	}
 
 	if err := http.ListenAndServe(":"+port, r); err != nil {

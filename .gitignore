@@ -14,4 +14,7 @@ temp/
 gin-bin
 
 .env
-.env.*
+.env.local
+.env.dev
+.env.prod
+.env.qa
