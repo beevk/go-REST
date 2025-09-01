@@ -57,3 +57,10 @@ Prod:
 make prod
 ```
 
+
+### Notes
+To create a new table:
+`migrate create -ext sql -dir storage/migrations -seq create_todos_table`
+
+To run migrations:
+` migrate -source file://storage/migrations -database $POSTGRESQL_URL up`
