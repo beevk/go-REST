@@ -29,8 +29,8 @@ func (u *User) GenerateToken() (*JWTToken, error) {
 	expiresAt := time.Now().Add(time.Hour * 24 * 7) // Token valid for 7 days
 
 	jwtToken.Claims = jwt.MapClaims{
-		"id":  u.ID,
-		"exp": expiresAt.Unix(),
+		"user_id": u.ID,
+		"exp":     expiresAt.Unix(),
 	}
 
 	accessToken, err := jwtToken.SignedString([]byte(os.Getenv("JWT_SECRET")))
@@ -42,4 +42,13 @@ func (u *User) GenerateToken() (*JWTToken, error) {
 		AccessToken: accessToken,
 		ExpiresAt:   expiresAt,
 	}, nil
+}
+
+func (d *Domain) GetUserById(id int64) (*User, error) {
+	user, err := d.DB.UserRepo.GetById(id)
+	if err != nil {
+		return nil, err
+	}
+
+	return user, nil
 }

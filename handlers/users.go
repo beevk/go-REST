@@ -7,6 +7,11 @@ import (
 	"github.com/beevk/go-todo/utils"
 )
 
+type authResponse struct {
+	User  *domain.User     `json:"user"`
+	Token *domain.JWTToken `json:"token"`
+}
+
 func (s *Server) registerUser() http.HandlerFunc {
 	var payload domain.RegisterPayload
 
@@ -18,7 +23,15 @@ func (s *Server) registerUser() http.HandlerFunc {
 		}
 
 		// Generate JWT token
+		token, err := user.GenerateToken()
+		if err != nil {
+			internalServerErrorResponse(w, err)
+			return
+		}
 
-		utils.JsonResponse(w, user, http.StatusCreated)
+		utils.JsonResponse(w, &authResponse{
+			User:  user,
+			Token: token,
+		}, http.StatusCreated)
 	}, &payload)
 }

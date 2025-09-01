@@ -7,12 +7,28 @@ import (
 	"io"
 	"net/http"
 
+	"github.com/beevk/go-todo/domain"
 	. "github.com/beevk/go-todo/utils"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 func badRequestResponse(w http.ResponseWriter, err error) {
 	data := map[string]string{"error": err.Error()}
 	JsonResponse(w, data, http.StatusBadRequest)
+}
+
+func unauthorizedResponse(w http.ResponseWriter, err error) {
+	data := map[string]string{"error": "Unauthorized"}
+	if err != nil {
+		data["error"] = err.Error()
+	}
+	JsonResponse(w, data, http.StatusUnauthorized)
+}
+
+func internalServerErrorResponse(w http.ResponseWriter, err error) {
+	data := map[string]string{"error": "Internal Server Error"}
+	fmt.Println("Internal Server Error:", err)
+	JsonResponse(w, data, http.StatusInternalServerError)
 }
 
 // Middleware that validates the request payload
@@ -39,4 +55,30 @@ func validatePayload(next http.HandlerFunc, payload PayloadValidation) http.Hand
 		ctx := context.WithValue(r.Context(), "payload", payload)
 		next.ServeHTTP(w, r.WithContext(ctx))
 	}
+}
+
+func (s *Server) withUser(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		token, err := domain.ParseToken(r)
+		if err != nil {
+			unauthorizedResponse(w, err)
+			return
+		}
+
+		if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+			userId := int64(claims["user_id"].(float64))
+
+			user, err := s.domain.GetUserById(userId)
+			if err != nil {
+				unauthorizedResponse(w, err)
+				return
+			}
+
+			ctx := context.WithValue(r.Context(), "currentUser", user)
+			next.ServeHTTP(w, r.WithContext(ctx))
+		} else {
+			unauthorizedResponse(w, nil)
+			return
+		}
+	})
 }

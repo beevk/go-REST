@@ -16,16 +16,8 @@ type ErrNotLongEnough struct {
 	minLength int
 }
 
-func (e ErrNotLongEnough) Error() string {
-	return fmt.Sprintf("%v length must be at least %v", e.field, e.minLength)
-}
-
-type ErrIsRequired struct {
+type ErrInvalidEmail struct {
 	field string
-}
-
-func (e ErrIsRequired) Error() string {
-	return fmt.Sprintf("%v is required", e.field)
 }
 
 type ErrShouldMatch struct {
@@ -33,12 +25,20 @@ type ErrShouldMatch struct {
 	field2 string
 }
 
-func (e ErrShouldMatch) Error() string {
-	return fmt.Sprintf("%v must match %v", e.field2, e.field1)
+type ErrIsRequired struct {
+	field string
 }
 
-type ErrInvalidEmail struct {
-	field string
+func (e ErrNotLongEnough) Error() string {
+	return fmt.Sprintf("%v length must be at least %v", e.field, e.minLength)
+}
+
+func (e ErrIsRequired) Error() string {
+	return fmt.Sprintf("%v is required", e.field)
+}
+
+func (e ErrShouldMatch) Error() string {
+	return fmt.Sprintf("%v must match %v", e.field2, e.field1)
 }
 
 func (e ErrInvalidEmail) Error() string {
