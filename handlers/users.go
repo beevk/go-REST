@@ -35,3 +35,17 @@ func (s *Server) registerUser() http.HandlerFunc {
 		}, http.StatusCreated)
 	}, &payload)
 }
+
+func (s *Server) getUserFromContext(r *http.Request) (*domain.User, error) {
+	userCtx := r.Context().Value("currentUser")
+	if userCtx == nil {
+		return nil, domain.ErrNoResult
+	}
+
+	user, ok := userCtx.(*domain.User)
+	if !ok {
+		return nil, domain.ErrNoResult
+	}
+
+	return user, nil
+}

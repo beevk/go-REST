@@ -1,4 +1,4 @@
-package postgres
+package storage
 
 import (
 	"errors"
@@ -9,6 +9,10 @@ import (
 
 type UserRepo struct {
 	DB *pg.DB
+}
+
+func NewUserRepo(db *pg.DB) *UserRepo {
+	return &UserRepo{DB: db}
 }
 
 func (u UserRepo) GetByEmail(email string) (*domain.User, error) {
@@ -60,8 +64,4 @@ func (u UserRepo) Create(user *domain.User) (*domain.User, error) {
 	}
 
 	return user, nil
-}
-
-func NewUserRepo(db *pg.DB) *UserRepo {
-	return &UserRepo{DB: db}
 }

@@ -7,7 +7,7 @@ import (
 
 	"github.com/beevk/go-todo/domain"
 	"github.com/beevk/go-todo/handlers"
-	"github.com/beevk/go-todo/postgres"
+	"github.com/beevk/go-todo/storage"
 	"github.com/go-pg/pg/v10"
 )
 
@@ -32,7 +32,7 @@ func main() {
 		dbName = "todo"
 	}
 
-	DB := postgres.New(&pg.Options{
+	DB := storage.New(&pg.Options{
 		Addr:     dbHost + ":5432",
 		User:     dbUser,
 		Password: dbPassword,
@@ -46,7 +46,10 @@ func main() {
 		}
 	}(DB)
 
-	domainDB := &domain.DB{UserRepo: postgres.NewUserRepo(DB)}
+	domainDB := &domain.DB{
+		UserRepo: storage.NewUserRepo(DB),
+		ToDoRepo: storage.NewToDoRepo(DB),
+	}
 
 	d := &domain.Domain{DB: domainDB}
 
