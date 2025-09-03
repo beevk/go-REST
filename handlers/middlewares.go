@@ -15,6 +15,7 @@ import (
 func badRequestResponse(w http.ResponseWriter, err error) {
 	data := map[string]string{"error": err.Error()}
 	JsonResponse(w, data, http.StatusBadRequest)
+	return
 }
 
 func unauthorizedResponse(w http.ResponseWriter, err error) {
@@ -23,12 +24,14 @@ func unauthorizedResponse(w http.ResponseWriter, err error) {
 		data["error"] = err.Error()
 	}
 	JsonResponse(w, data, http.StatusUnauthorized)
+	return
 }
 
 func internalServerErrorResponse(w http.ResponseWriter, err error) {
 	data := map[string]string{"error": "Internal Server Error"}
 	fmt.Println("Internal Server Error:", err)
 	JsonResponse(w, data, http.StatusInternalServerError)
+	return
 }
 
 // Middleware that validates the request payload

@@ -1,16 +1,18 @@
 package domain
 
 type UserRepo interface {
+	GetById(id int64) (*User, error)
 	GetByEmail(email string) (*User, error)
 	GetByUsername(username string) (*User, error)
-	GetById(id int64) (*User, error)
 	Create(user *User) (*User, error)
 }
 
 type ToDoRepo interface {
+	GetById(id int64) (*ToDo, error)
+	GetByUserId(id int64) ([]*ToDo, error)
 	Create(todo *ToDo) (*ToDo, error)
 	Update(todo *ToDo) (*ToDo, error)
-	GetByUserId(id int64) (*ToDo, error)
+	Delete(todo *ToDo) error
 }
 
 type DB struct {

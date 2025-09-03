@@ -23,7 +23,18 @@ func (s *Server) SetupRoutes(r *chi.Mux) {
 
 		r.Route("/todo", func(r chi.Router) {
 			r.Use(s.withUser)
+
 			r.Post("/", s.createToDo())
+
+			//r.Get("/", s.getAllToDos())
+
+			r.Route("/{todoID}", func(r chi.Router) {
+				r.Use(s.todoCtx)
+
+				r.Get("/", s.getToDoById())
+				r.Patch("/", s.updateToDo())
+				r.Delete("/", s.deleteToDo())
+			})
 		})
 	})
 }
