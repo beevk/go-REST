@@ -15,6 +15,10 @@ type ToDoRepo interface {
 	Delete(todo *ToDo) error
 }
 
+type HasOwner interface {
+	IsOwner(user *User) bool
+}
+
 type DB struct {
 	UserRepo UserRepo
 	ToDoRepo ToDoRepo

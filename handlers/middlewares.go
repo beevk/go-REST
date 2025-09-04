@@ -3,6 +3,7 @@ package handlers
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -12,6 +13,10 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
+var (
+	ForbiddenErr = errors.New("forbidden")
+)
+
 func badRequestResponse(w http.ResponseWriter, err error) {
 	data := map[string]string{"error": err.Error()}
 	JsonResponse(w, data, http.StatusBadRequest)
@@ -19,7 +24,7 @@ func badRequestResponse(w http.ResponseWriter, err error) {
 }
 
 func unauthorizedResponse(w http.ResponseWriter, err error) {
-	data := map[string]string{"error": "Unauthorized"}
+	data := map[string]string{"error": "unauthorized"}
 	if err != nil {
 		data["error"] = err.Error()
 	}
@@ -27,8 +32,17 @@ func unauthorizedResponse(w http.ResponseWriter, err error) {
 	return
 }
 
+func forbiddenResponse(w http.ResponseWriter, err error) {
+	data := map[string]string{"error": "forbidden"}
+	if err != nil {
+		data["error"] = err.Error()
+	}
+	JsonResponse(w, data, http.StatusForbidden)
+	return
+}
+
 func internalServerErrorResponse(w http.ResponseWriter, err error) {
-	data := map[string]string{"error": "Internal Server Error"}
+	data := map[string]string{"error": "internal server error"}
 	fmt.Println("Internal Server Error:", err)
 	JsonResponse(w, data, http.StatusInternalServerError)
 	return
@@ -84,4 +98,55 @@ func (s *Server) withUser(next http.Handler) http.Handler {
 			return
 		}
 	})
+}
+
+func (s *Server) validateOwnership(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		todo, err := s.getToDoFromContext(r)
+		if err != nil {
+			badRequestResponse(w, err)
+			return
+		}
+
+		user, err := s.getUserFromContext(r)
+		if err != nil {
+			unauthorizedResponse(w, err)
+			return
+		}
+
+		if todo.UserID != user.ID {
+			unauthorizedResponse(w, errors.New("unauthorized"))
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
+// validateOwnership middleware is too specific to ToDo entity
+// we can make it more generic by using interface
+// any entity that has an owner should implement this interface
+// and we can use this middleware to validate ownership of that entity
+// Example: ToDo, Project, etc.
+// This middleware will check if the current user is the owner of the entity
+// The entity should be set in the context with the given contextKey
+// Example usage: r.Context().Value("todo").(*domain.ToDo)
+func (s *Server) withOwner(contextKey string) func(next http.Handler) http.Handler {
+	return func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			user, err := s.getUserFromContext(r)
+			if err != nil {
+				unauthorizedResponse(w, err)
+				return
+			}
+
+			isOwner := r.Context().Value(contextKey).(domain.HasOwner).IsOwner(user)
+			if !isOwner {
+				forbiddenResponse(w, ForbiddenErr)
+				return
+			}
+
+			next.ServeHTTP(w, r)
+		})
+	}
 }

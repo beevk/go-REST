@@ -11,8 +11,8 @@ import (
 	"github.com/go-chi/chi/v5"
 )
 
-type todoResponse struct {
-	Todo *domain.ToDo `json:"todo"`
+type getTodoByUserIdResponse struct {
+	Data []domain.ToDo `json:"data"`
 }
 
 func (s *Server) createToDo() http.HandlerFunc {
@@ -77,29 +77,6 @@ func (s *Server) todoCtx(next http.Handler) http.Handler {
 	})
 }
 
-func (s *Server) validateOwnership(next http.Handler) http.Handler {
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		todo, err := s.getToDoFromContext(r)
-		if err != nil {
-			badRequestResponse(w, err)
-			return
-		}
-
-		user, err := s.getUserFromContext(r)
-		if err != nil {
-			unauthorizedResponse(w, err)
-			return
-		}
-
-		if todo.UserID != user.ID {
-			unauthorizedResponse(w, errors.New("unauthorized"))
-			return
-		}
-
-		next.ServeHTTP(w, r)
-	})
-}
-
 func (s *Server) getToDoFromContext(r *http.Request) (*domain.ToDo, error) {
 	todoCtx := r.Context().Value("todo")
 	if todoCtx == nil {
@@ -128,6 +105,35 @@ func (s *Server) getToDoById() http.HandlerFunc {
 		}
 
 		utils.JsonResponse(w, todo, http.StatusOK)
+	}
+}
+
+func (s *Server) getToDoByUserId() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		user, err := s.getUserFromContext(r)
+		if err != nil {
+			if errors.Is(err, domain.ErrNoResult) {
+				response := map[string]string{"error": domain.ErrNoResult.Error()}
+				utils.JsonResponse(w, response, http.StatusNotFound)
+				return
+			}
+			badRequestResponse(w, err)
+			return
+		}
+
+		todo, err := s.domain.GetAll(user)
+		if err != nil {
+			internalServerErrorResponse(w, err)
+			return
+		}
+
+		data := &getTodoByUserIdResponse{
+			Data: make([]domain.ToDo, len(todo)),
+		}
+		for i, t := range todo {
+			data.Data[i] = *t
+		}
+		utils.JsonResponse(w, data, http.StatusOK)
 	}
 }
 

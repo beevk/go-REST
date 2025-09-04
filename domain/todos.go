@@ -43,6 +43,10 @@ func (u *UpdateToDoPayload) IsValid() (bool, map[string]string) {
 	return v.HasErrors(), v.errors
 }
 
+func (t *ToDo) IsOwner(u *User) bool {
+	return t.UserID == u.ID
+}
+
 func (d *Domain) Create(p CreateToDoPayload, u *User) (*ToDo, error) {
 	data := &ToDo{
 		Title:     p.Title,
