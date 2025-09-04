@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
 )
 
 type User struct {
@@ -42,6 +43,11 @@ func (u *User) GenerateToken() (*JWTToken, error) {
 		AccessToken: accessToken,
 		ExpiresAt:   expiresAt,
 	}, nil
+}
+
+func (u *User) CheckPassword(password string) error {
+	passwordAsBytes, userProvidedPasswordAsBytes := []byte(u.Password), []byte(password)
+	return bcrypt.CompareHashAndPassword(passwordAsBytes, userProvidedPasswordAsBytes)
 }
 
 func (d *Domain) GetUserById(id int64) (*User, error) {

@@ -16,6 +16,22 @@ type RegisterPayload struct {
 	Username        string `json:"username"`
 }
 
+type LoginPayload struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func (r *LoginPayload) IsValid() (bool, map[string]string) {
+	v := NewValidator()
+
+	v.MustNotBeEmpty("email", r.Email)
+	v.MustBeValidEmail("email", r.Email)
+
+	v.MustNotBeEmpty("password", r.Password)
+
+	return v.HasErrors(), v.errors
+}
+
 func (r *RegisterPayload) IsValid() (bool, map[string]string) {
 	v := NewValidator()
 
@@ -60,6 +76,19 @@ func (d *Domain) Register(payload RegisterPayload) (*User, error) {
 	user, err := d.DB.UserRepo.Create(data)
 	if err != nil {
 		return nil, err
+	}
+
+	return user, nil
+}
+
+func (d *Domain) Login(payload LoginPayload) (*User, error) {
+	user, err := d.DB.UserRepo.GetByEmail(payload.Email)
+	if err != nil || user == nil {
+		return nil, ErrInternalServerError
+	}
+	err = user.CheckPassword(payload.Password)
+	if err != nil {
+		return nil, ErrInvalidCredentials
 	}
 
 	return user, nil

@@ -14,7 +14,6 @@ type authResponse struct {
 
 func (s *Server) registerUser() http.HandlerFunc {
 	var payload domain.RegisterPayload
-
 	return validatePayload(func(w http.ResponseWriter, r *http.Request) {
 		user, err := s.domain.Register(payload)
 		if err != nil {
@@ -48,4 +47,26 @@ func (s *Server) getUserFromContext(r *http.Request) (*domain.User, error) {
 	}
 
 	return user, nil
+}
+
+func (s *Server) loginUser() http.HandlerFunc {
+	var payload domain.LoginPayload
+	return validatePayload(func(w http.ResponseWriter, r *http.Request) {
+		user, err := s.domain.Login(payload)
+		if err != nil {
+			unauthorizedResponse(w, err)
+			return
+		}
+
+		// Generate JWT token
+		token, err := user.GenerateToken()
+		if err != nil {
+			internalServerErrorResponse(w, err)
+			return
+		}
+		utils.JsonResponse(w, &authResponse{
+			User:  user,
+			Token: token,
+		}, http.StatusOK)
+	}, &payload)
 }

@@ -13,10 +13,6 @@ import (
 	"github.com/golang-jwt/jwt/v5"
 )
 
-var (
-	ForbiddenErr = errors.New("forbidden")
-)
-
 func badRequestResponse(w http.ResponseWriter, err error) {
 	data := map[string]string{"error": err.Error()}
 	JsonResponse(w, data, http.StatusBadRequest)
@@ -142,7 +138,7 @@ func (s *Server) withOwner(contextKey string) func(next http.Handler) http.Handl
 
 			isOwner := r.Context().Value(contextKey).(domain.HasOwner).IsOwner(user)
 			if !isOwner {
-				forbiddenResponse(w, ForbiddenErr)
+				forbiddenResponse(w, domain.ErrForbidden)
 				return
 			}
 

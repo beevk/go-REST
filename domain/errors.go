@@ -9,6 +9,11 @@ var (
 	ErrUserWithUsernameAlreadyExists = errors.New("user with username already exists")
 	ErrUserWithEmailAlreadyExists    = errors.New("user with email already exists")
 	ErrNoResult                      = errors.New("no result found")
+	ErrUnauthorized                  = errors.New("unauthorized")
+	ErrForbidden                     = errors.New("forbidden")
+	ErrInternalServerError           = errors.New("internal server error")
+	ErrBadRequest                    = errors.New("bad request")
+	ErrInvalidCredentials            = errors.New("invalid credentials. Please check your email and password")
 )
 
 type ErrNotLongEnough struct {

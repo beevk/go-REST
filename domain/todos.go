@@ -8,7 +8,7 @@ type ToDo struct {
 	tableName struct{} `pg:"todos"`
 	ID        int64    `json:"id"`
 	Title     string   `json:"title"`
-	Completed bool     `json:"completed"`
+	Completed bool     `json:"completed" pg:",use_zero"` // use_zero to store false value instead of NULL
 	UserID    int64    `json:"userId"`
 
 	CreatedAt time.Time `json:"createdAt"`

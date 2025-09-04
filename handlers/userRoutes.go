@@ -7,5 +7,6 @@ import (
 func (s *Server) setupUserRoutes(r chi.Router) {
 	r.Route("/users", func(r chi.Router) {
 		r.Post("/register", s.registerUser())
+		r.Post("/login", s.loginUser())
 	})
 }
