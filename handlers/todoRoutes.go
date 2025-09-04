@@ -14,6 +14,7 @@ func (s *Server) setupTodoRoutes(r chi.Router) {
 
 		r.Route("/{todoID}", func(r chi.Router) {
 			r.Use(s.todoCtx)
+			r.Use(s.validateOwnership)
 
 			r.Get("/", s.getToDoById())
 			r.Patch("/", s.updateToDo())

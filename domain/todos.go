@@ -36,7 +36,7 @@ func (c *CreateToDoPayload) IsValid() (bool, map[string]string) {
 func (u *UpdateToDoPayload) IsValid() (bool, map[string]string) {
 	v := NewValidator()
 
-	if *u.Title != "" {
+	if u.Title != nil && *u.Title != "" {
 		v.MustBeLongerThan("title", *u.Title, 3)
 	}
 

@@ -77,6 +77,29 @@ func (s *Server) todoCtx(next http.Handler) http.Handler {
 	})
 }
 
+func (s *Server) validateOwnership(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		todo, err := s.getToDoFromContext(r)
+		if err != nil {
+			badRequestResponse(w, err)
+			return
+		}
+
+		user, err := s.getUserFromContext(r)
+		if err != nil {
+			unauthorizedResponse(w, err)
+			return
+		}
+
+		if todo.UserID != user.ID {
+			unauthorizedResponse(w, errors.New("unauthorized"))
+			return
+		}
+
+		next.ServeHTTP(w, r)
+	})
+}
+
 func (s *Server) getToDoFromContext(r *http.Request) (*domain.ToDo, error) {
 	todoCtx := r.Context().Value("todo")
 	if todoCtx == nil {
@@ -134,12 +157,6 @@ func (s *Server) updateToDo() http.HandlerFunc {
 
 func (s *Server) deleteToDo() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		user, err := s.getUserFromContext(r)
-		if err != nil {
-			internalServerErrorResponse(w, err)
-			return
-		}
-
 		todo, err := s.getToDoFromContext(r)
 		if err != nil {
 			if errors.Is(err, domain.ErrNoResult) {
@@ -148,11 +165,6 @@ func (s *Server) deleteToDo() http.HandlerFunc {
 				return
 			}
 			badRequestResponse(w, err)
-			return
-		}
-
-		if todo.UserID != user.ID {
-			unauthorizedResponse(w, errors.New("unauthorized"))
 			return
 		}
 
