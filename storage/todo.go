@@ -18,7 +18,7 @@ func NewToDoRepo(db *pg.DB) *ToDoRepo {
 func (t ToDoRepo) GetByUserId(id int64) ([]*domain.ToDo, error) {
 	var todos []*domain.ToDo
 
-	err := t.DB.Model(&todos).Where("user_id = ?", id).Select()
+	err := t.DB.Model(todos).Where("user_id = ?", id).Select()
 	if err != nil {
 		if errors.Is(err, pg.ErrNoRows) {
 			return nil, domain.ErrNoResult
@@ -30,9 +30,9 @@ func (t ToDoRepo) GetByUserId(id int64) ([]*domain.ToDo, error) {
 }
 
 func (t ToDoRepo) GetById(id int64) (*domain.ToDo, error) {
-	var todo *domain.ToDo
+	todo := new(domain.ToDo)
 
-	err := t.DB.Model(&todo).Where("id = ?", id).First()
+	err := t.DB.Model(todo).Where("id = ?", id).First()
 	if err != nil {
 		if errors.Is(err, pg.ErrNoRows) {
 			return nil, domain.ErrNoResult
@@ -61,7 +61,7 @@ func (t ToDoRepo) Update(todo *domain.ToDo) (*domain.ToDo, error) {
 }
 
 func (t ToDoRepo) Delete(todo *domain.ToDo) error {
-	_, err := t.DB.Model(todo).Delete()
+	_, err := t.DB.Model(todo).WherePK().Delete()
 	if err != nil {
 		return err
 	}

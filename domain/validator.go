@@ -8,6 +8,10 @@ type Validator struct {
 	errors map[string]string
 }
 
+type PayloadValidation interface {
+	IsValid() (bool, map[string]string)
+}
+
 func NewValidator() *Validator {
 	return &Validator{
 		errors: make(map[string]string),

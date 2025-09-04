@@ -3,7 +3,6 @@ package handlers
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"strconv"
 
@@ -44,13 +43,13 @@ func (s *Server) createToDo() http.HandlerFunc {
 //		return nil, err
 //	}
 //
-//	todos, err := s.domain.GetByUserId(currentUser.ID)
+//	todo, err := s.domain.GetByUserId(currentUser.ID)
 //	if err != nil {
 //		internalServerErrorResponse(w, err)
 //		return nil, err
 //	}
 //
-//	utils.JsonResponse(w, todos, http.StatusOK)
+//	utils.JsonResponse(w, todo, http.StatusOK)
 //	return nil, nil
 //}
 
@@ -58,7 +57,7 @@ func (s *Server) todoCtx(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		todo := new(domain.ToDo)
 
-		if todoId := chi.URLParam(r, "id"); todoId != "" {
+		if todoId := chi.URLParam(r, "todoID"); todoId != "" {
 			id, err := strconv.Atoi(todoId)
 			if err != nil {
 				badRequestResponse(w, err)
@@ -72,7 +71,6 @@ func (s *Server) todoCtx(next http.Handler) http.Handler {
 				return
 			}
 		}
-		fmt.Println("::ToDo from DB:", todo)
 		ctx := context.WithValue(r.Context(), "todo", todo)
 
 		next.ServeHTTP(w, r.WithContext(ctx))
@@ -80,7 +78,7 @@ func (s *Server) todoCtx(next http.Handler) http.Handler {
 }
 
 func (s *Server) getToDoFromContext(r *http.Request) (*domain.ToDo, error) {
-	todoCtx := r.Context().Value("currentUser")
+	todoCtx := r.Context().Value("todo")
 	if todoCtx == nil {
 		return nil, domain.ErrNoResult
 	}
@@ -136,6 +134,12 @@ func (s *Server) updateToDo() http.HandlerFunc {
 
 func (s *Server) deleteToDo() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		user, err := s.getUserFromContext(r)
+		if err != nil {
+			internalServerErrorResponse(w, err)
+			return
+		}
+
 		todo, err := s.getToDoFromContext(r)
 		if err != nil {
 			if errors.Is(err, domain.ErrNoResult) {
@@ -146,11 +150,18 @@ func (s *Server) deleteToDo() http.HandlerFunc {
 			badRequestResponse(w, err)
 			return
 		}
+
+		if todo.UserID != user.ID {
+			unauthorizedResponse(w, errors.New("unauthorized"))
+			return
+		}
+
 		err = s.domain.Delete(todo)
 		if err != nil {
 			internalServerErrorResponse(w, err)
 			return
 		}
-		utils.JsonResponse(w, todo, http.StatusOK)
+		w.WriteHeader(http.StatusOK)
+		return
 	}
 }

@@ -35,7 +35,7 @@ func internalServerErrorResponse(w http.ResponseWriter, err error) {
 }
 
 // Middleware that validates the request payload
-func validatePayload(next http.HandlerFunc, payload PayloadValidation) http.HandlerFunc {
+func validatePayload(next http.HandlerFunc, payload domain.PayloadValidation) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		err := json.NewDecoder(r.Body).Decode(&payload)
 		if err != nil {

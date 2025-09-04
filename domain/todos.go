@@ -1,7 +1,6 @@
 package domain
 
 import (
-	//"context"
 	"time"
 )
 
@@ -68,7 +67,11 @@ func (d *Domain) GetAll(u *User) ([]*ToDo, error) {
 }
 
 func (d *Domain) Get(id int64) (*ToDo, error) {
-	return d.DB.ToDoRepo.GetById(id)
+	data, err := d.DB.ToDoRepo.GetById(id)
+	if err != nil {
+		return nil, err
+	}
+	return data, nil
 }
 
 // You can use this hook if you want to update the UpdatedAt field automatically
@@ -102,5 +105,9 @@ func (d *Domain) Update(t *ToDo, p *UpdateToDoPayload) (*ToDo, error) {
 }
 
 func (d *Domain) Delete(t *ToDo) error {
-	return d.DB.ToDoRepo.Delete(t)
+	err := d.DB.ToDoRepo.Delete(t)
+	if err != nil {
+		return err
+	}
+	return nil
 }

@@ -12,10 +12,6 @@ type Server struct {
 	domain *domain.Domain
 }
 
-type PayloadValidation interface {
-	IsValid() (bool, map[string]string)
-}
-
 func NewServer(d *domain.Domain) *Server {
 	return &Server{domain: d}
 }
@@ -30,14 +26,12 @@ func setupMiddleware(r *chi.Mux) {
 	r.Use(middleware.Timeout(60 * time.Second))
 }
 
-func SetupRouter(d *domain.Domain) *chi.Mux {
-	// Setup your routes here
-	server := NewServer(d)
+func (s *Server) SetupRouter() *chi.Mux {
 	r := chi.NewRouter()
 
 	setupMiddleware(r)
 
-	server.SetupRoutes(r)
+	s.SetupRoutes(r)
 
 	return r
 }

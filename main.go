@@ -50,10 +50,10 @@ func main() {
 		UserRepo: storage.NewUserRepo(DB),
 		ToDoRepo: storage.NewToDoRepo(DB),
 	}
-
 	d := &domain.Domain{DB: domainDB}
 
-	r := handlers.SetupRouter(d)
+	s := handlers.NewServer(d)
+	r := s.SetupRouter()
 
 	port := os.Getenv("PORT")
 	if port == "" {
